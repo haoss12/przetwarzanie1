@@ -15,7 +15,7 @@ int progowanie(int obraz_pgm [ ][MAX], int wymx, int wymy, int szarosci, int pro
             {
                 if ((float) obraz_pgm [i][j] <= wartprog) //progowanie "w dol", do czerni
                 {
-                    obraz_pgm [i][j] = 0;
+                    obraz_pgm [i][j] = 0; /* powinienem chyba jednak dac (float) *obraz_pgm... */
                 }
                 
                 if ((float) obraz_pgm [i][j] > wartprog) //progowanie "w gore", do bieli
