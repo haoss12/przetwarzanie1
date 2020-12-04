@@ -4,7 +4,7 @@
 
 #define MAX 1024        /* Maksymalny rozmiar wczytywanego obrazu */
 #define DL_LINII 1024   /* Dlugosc buforow pomocniczych */
-
+#define KRAWEDZ 0       /* Krawedz obrazu */
 
 int negatyw(int obraz_pgm [ ][MAX], int wymx, int wymy, int szarosci)
 {
@@ -51,7 +51,7 @@ int konturowanie(int obraz_pgm [ ][MAX], int wymx, int wymy, int szarosci)
         {
             for (j=0; j<wymx; ++j)
             {
-                if (i+1==wymy)
+                if (i==wymy)
                 {
                     if (j+1==wymx)
                     {
@@ -71,34 +71,35 @@ int konturowanie(int obraz_pgm [ ][MAX], int wymx, int wymy, int szarosci)
         }
 }
 
-int rozmywanie(int obraz_pgm [ ][MAX], int *wymx, int *wymy, int szarosci)
+int rozmywanie(int obraz_pgm [ ][MAX], int *wymx, int *wymy, int szarosci, int prog, int tabela_temp [ ][MAX])
 {
-    int i, j;
-    
-    if (obraz_pgm[0][0] == NULL)
+    int i, j;   /*rozmywanie jest wykonywane do tabeli tymczasowej          */
+                /*po to by pobierane wartosci sie zgadzaly z oczekiwaniami  */
+
+    if (obraz_pgm[0][0] == NULL) /*funkcja sprawdzająca czy wczytano plik*/
     {
         fprintf(stderr,"Blad: Nie wczytano pliku\n");
         return 0;
     }
     else
     {
-        if (progowanie == 1)
+        if (prog == 1) //pierwszy prog rozmywania
     {
         for (i=0; i<wymy; ++i)
         {
             for (j=0; j<wymx; ++j)
             {
-                if (i==0)
+                if (i==KRAWEDZ)     //wyjatek dla krawedzi obrazu
                 {
-                obraz_pgm[i][j] = (obraz_pgm[i][j]+obraz_pgm[i+1][j])/2;
+                tabela_temp[i][j] = (obraz_pgm[i][j]+obraz_pgm[i+1][j])/2;
                 }
-                if (i==(*wymy-1))
+                if (i==(*wymy-1))   //wyjatek dla krawedzi obrazu
                 {
-                obraz_pgm[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j])/2;
+                tabela_temp[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j])/2;
                 }
-                else
+                else                //standardowa sytuacja
                 {
-                    obraz_pgm[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j]+obraz_pgm[i+1][j])/3;  
+                tabela_temp[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j]+obraz_pgm[i+1][j])/3;  
                 }         
             }
         }
@@ -106,23 +107,31 @@ int rozmywanie(int obraz_pgm [ ][MAX], int *wymx, int *wymy, int szarosci)
         return 0;
     }
 
-    if (progowanie == 2)
+    if (prog == 2)  //drugi prog rozmywania
     {
         for (i=0; i<wymy; ++i)
         {
             for (j=0; j<wymx; ++j)
-            {
-                if (i==0)
+            {   
+                if (i==KRAWEDZ)             //wyjatek dla krawedzi obrazu
                 {
-                obraz_pgm[i][j] = (obraz_pgm[i][j]+obraz_pgm[i+1][j])/2;
+                tabela_temp[i][j] = (obraz_pgm[i][j]+obraz_pgm[i+1][j]+obraz_pgm[i+2][j])/3;
                 }
-                if (i==(*wymy-1))
+                if (i==(KRAWEDZ+1))         //wyjatek dla drugiego rzedu obrazu
                 {
-                obraz_pgm[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j])/2;
+                tabela_temp[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j]+obraz_pgm[i+1][j]+obraz_pgm[i+2][j])/4;
                 }
-                else
+                if (i==(*wymy-2))           //wyjatek dla przedostatniego rzedu obrazu
                 {
-                    obraz_pgm[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j]+obraz_pgm[i+1][j])/3;  
+                tabela_temp[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j])/2;
+                }
+                if (i==(*wymy-1))           //wyjatek dla krawedzi obrazu
+                {
+                tabela_temp[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j])/2;
+                }
+                else                //standardowa sytuacja
+                {
+                tabela_temp[i][j] = (obraz_pgm[i-1][j]+obraz_pgm[i][j]+obraz_pgm[i+1][j])/3;  
                 }         
             }
         }
@@ -155,7 +164,7 @@ int zapisz(FILE *plik_wy, int obraz_pgm [ ][MAX], int wymx, int wymy, int szaros
     return 1;
 }
 
-void wyczysc()  /*funkcja czyszczaca terminal dla wiekszej czytelnosci*/ 
+void wyczysc()  /*funkcja czyszczaca terminal dla wiekszej czytelnosci menu*/ 
 {
   char polecenie[DL_LINII];     /* bufor pomocniczy do zestawienia polecenia */
   strcpy(polecenie,"clear ");   /* konstrukcja polecenia postaci */
