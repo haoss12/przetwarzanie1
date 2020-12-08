@@ -1,29 +1,31 @@
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
 
 #define MAX 1024        /* Maksymalny rozmiar wczytywanego obrazu */
 #define DL_LINII 1024   /* Dlugosc buforow pomocniczych */
 #define KRAWEDZ 0       /* Krawedz obrazu */
 
-int negatyw(int obraz_pgm [ ][MAX], int wymx, int wymy, int szarosci)
+int negatyw(int obraz_pgm [][MAX], int *wymx, int *wymy, int szarosci)
 {
     int i, j;
-        for (i=0; i<wymy; ++i)
+        for (i=0; i<*wymy; ++i)
         {
-            for (j=0; j<wymx; ++j)
+            for (j=0; j<*wymx; ++j)
             {
             obraz_pgm [i][j] = szarosci - obraz_pgm [i][j]; //odbicie wartosci koloru piksela na przeciwna strone tabeli
             }
         }
+    return 0;
 }
 
-int progowanie(int obraz_pgm [ ][MAX], int wymx, int wymy, int szarosci, int procprog) //procprog - wprowadzony w menu przez uzytkownika procent przy ktorym ma zostac wykonane progowanie
+int progowanie(int obraz_pgm [ ][MAX], int *wymx, int *wymy, int szarosci, int procprog) /*procprog - wprowadzony w menu przez uzytkownika procent przy ktorym ma zostac wykonane progowanie*/
 {
     int i, j, wartprog;     /*wartprog - liczbowa wartosc progu dla ktorej nastepuje "zalamanie" sie czerni z biela*/
                             /*jest to wybrany przez uzytkownika procent z maksymalnej wartosci szarosci*/
         
-        wartprog = (0.01*procprog*szarosci);
+        wartprog = ((procprog*szarosci)/100);
         
         printf ("%d", wartprog); //tymczasowa czesc funkcji do debbugowania, ma sprawdzac czy program odpowiednio wylicza wartosc
 
@@ -31,42 +33,52 @@ int progowanie(int obraz_pgm [ ][MAX], int wymx, int wymy, int szarosci, int pro
         {
             for (j=0; j<wymx; ++j)
             {
-                if ((float) obraz_pgm [i][j] <= wartprog) //progowanie "w dol", do czerni
+                if (obraz_pgm [i][j] <= wartprog) //progowanie "w dol", do czerni
                 {
                     obraz_pgm [i][j] = 0;
                 }
                 
-                if ((float) obraz_pgm [i][j] > wartprog) //progowanie "w gore", do bieli
+                if (obraz_pgm [i][j] > wartprog) //progowanie "w gore", do bieli
                 {
                     obraz_pgm [i][j] = szarosci;
                 }
             }
         }
+    return (i*j);
 }
 
-int konturowanie(int obraz_pgm [ ][MAX], int wymx, int wymy, int szarosci)
+void konturowanie(int obraz_pgm [ ][MAX], int *wymx, int *wymy, int szarosci)
 {
     int i, j;
-        for (i=0; i<wymy; ++i)  //wyjatek - konturowanie przy krawedzi
+
+        for (i=0; i<*wymy; ++i)  
         {
-            for (j=0; j<wymx; ++j)
+            for (j=0; j<*wymx; ++j)
             {
-                if (i==wymy)
+                if (i==(*wymy-1))        /*wyjatek dla dolnych krawedzi obrazu*/
                 {
-                    if (j+1==wymx)
+                    if (j==(*wymx-1))    /*wyjatek dla rogu obrazu*/
                     {
                         obraz_pgm [i][j] = 0;
                     }
                     else
                     {
-                        obraz_pgm [i][j] = 
+                        obraz_pgm [i][j] = (abs(obraz_pgm [i][j+1]-obraz_pgm [i][j])); /*wyjatek dla dolnej krawedzi obrazu*/
                     }
                     
                 }
-                  
-                obraz_pgm [i][j] = (abs(obraz_pgm [i+1][j]-obraz_pgm [i][j]) + abs(obraz_pgm [i][j+1]-obraz_pgm [i][j])); /*konturowanie wedlug wzoru z pliku obrazy_filtry.pdf
-                                                                                                                           abs (int) to wart. bezwzgledna z liczby*/
-
+                else
+                {
+                    if (j==(*wymx-1))    /*wyjatek dla prawej krawedzi obrazu*/
+                    {
+                        obraz_pgm [i][j] = (abs(obraz_pgm [i+1][j]-obraz_pgm [i][j]));
+                    }
+                    else                /*standardowa sytuacja*/
+                    {
+                        obraz_pgm [i][j] = (abs(obraz_pgm [i+1][j]-obraz_pgm [i][j]) + abs(obraz_pgm [i][j+1]-obraz_pgm [i][j]));
+                    }
+                    /*konturowanie wedlug wzoru z pliku obrazy_filtry.pdf, abs (int) to wart. bezwzgledna z int*/
+                } 
             }
         }
 }
@@ -185,7 +197,7 @@ do
     {
     case 1:
         printf("Wybrałeś opcję %d. \n", wart);
-        int czytaj(FILE *plik_we,int obraz_pgm[][MAX],int *wymx,int *wymy, int *szarosci)
+        int czytaj(FILE *plik_we,int obraz_pgm[][MAX],int *wymx,int *wymy, int *szarosci);
         break;
     case 2:
         printf("Wybrałeś opcję %d. \n", wart);
