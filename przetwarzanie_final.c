@@ -2,7 +2,7 @@
 #include<string.h>
 #include<stdlib.h>
 
-#define MAX 1024        /* Maksymalny rozmiar wczytywanego obrazu */
+#define MAX 999         /* Maksymalny rozmiar wczytywanego obrazu */
 #define DL_LINII 1024   /* Dlugosc buforow pomocniczych */
 #define KRAWEDZ 0       /* Krawedz obrazu */
 
@@ -121,8 +121,8 @@ void usun()
   strcat(polecenie,"temp.pgm ");    /* rm "nazwa_pliku" &       */
   strcat(polecenie," &");
   system(polecenie);            /*wykonanie polecenia           */
-
 }
+
 /*Funkcja wykonujaca negatyw na wczytanym pliku*/
 void negatyw(int obraz_pgm [][MAX], int *wymx, int *wymy, int szarosci)
 {
@@ -358,7 +358,7 @@ int main() {
   do
 {
     printf ("Menu: \n 1 - Wczytaj \n 2 - Zapisz \n 3 - Wyswietl \n 4 - Negatyw \n 5 - Progowanie \n"); 
-    printf ("6 - Konturowanie \n 7 - Rozmycie pionowe \n 8 - Rozmycie poziome \n 0 - Wyjscie \n Twój wybor: ");
+    printf (" 6 - Konturowanie \n 7 - Rozmycie pionowe \n 8 - Rozmycie poziome \n 0 - Wyjscie \n Twój wybor: ");
     scanf ("%d", &wart);
     
     switch (wart)
@@ -408,7 +408,6 @@ int main() {
         zapisz(plik,obraz,&wymx,&wymy,szarosci); /*zapis pliku*/
         fclose(plik); /*zamykam go*/
         wyswietl("temp.pgm"); /*wywolanie f. wyswietlania*/
-        usun();         /*wywolanie f. usuwajacej plik tymczasowy*/
         wyczysc();  /*wywolanie f. czyszczenia terminala*/
         printf("Obraz wyswietlono poprawnie\n\n");
       }
@@ -509,6 +508,7 @@ int main() {
         break;    
     case 0:
         puts ("Koniec działania programu");
+        usun();
         return 0;
         break;
 
