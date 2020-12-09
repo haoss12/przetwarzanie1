@@ -17,7 +17,8 @@
  * \return liczba wczytanych pikseli						    *
  ************************************************************************************/
 
-int czytaj(FILE *plik_we,int obraz_pgm[][MAX],int *wymx,int *wymy, int *szarosci) {
+int czytaj(FILE *plik_we,int obraz_pgm[][MAX],int *wymx,int *wymy, int *szarosci)
+{
   char buf[DL_LINII];      /* bufor pomocniczy do czytania naglowka i komentarzy */
   int znak;                /* zmienna pomocnicza do czytania komentarzy */
   int koniec=0;            /* czy napotkano koniec danych w pliku */
@@ -91,7 +92,8 @@ int zapisz(FILE *plik_wy, int obraz_pgm [][MAX], int *wymx, int *wymy, int *szar
 }
 
 /* Wyswietlenie obrazu o zadanej nazwie za pomoca programu "display"   */
-void wyswietl(char *n_pliku) {
+void wyswietl(char *n_pliku)
+{
   char polecenie[DL_LINII];      /* bufor pomocniczy do zestawienia polecenia */
 
   strcpy(polecenie,"display ");  /* konstrukcja polecenia postaci */
@@ -102,13 +104,25 @@ void wyswietl(char *n_pliku) {
 }
 
 /*Funkcja czyszczaca terminal dla wiekszej czytelnosci menu*/
-void wyczysc() {
-  char polecenie[DL_LINII];      /* bufor pomocniczy do zestawienia polecenia */
+void wyczysc()
+{
+  char polecenie[DL_LINII];     /*bufor pomocniczy do zestawienia polecenia */
 
-  strcpy(polecenie,"clear ");  /* konstrukcja polecenia postaci */
-  system(polecenie);             /* wykonanie polecenia        */
+  strcpy(polecenie,"clear ");   /*konstrukcja polecenia postaci */
+  system(polecenie);            /*wykonanie polecenia           */
 }
 
+/*Funkjca usuwajaca plik tymczasowy stworzony na potrzeby wyswietlania*/
+void usun(char *n_pliku)
+{    
+  char polecenie[DL_LINII];     /*bufor pomocniczy do zestawienia polecenia */
+
+  strcpy(polecenie,"rm ");      /*konstrukcja polecenia postaci */
+  strcat(polecenie,n_pliku);    /* rm "nazwa_pliku" &       */
+  strcat(polecenie," &");
+  system(polecenie);            /*wykonanie polecenia           */
+
+}
 /*Funkcja wykonujaca negatyw na wczytanym pliku*/
 void negatyw(int obraz_pgm [][MAX], int *wymx, int *wymy, int szarosci)
 {
@@ -123,8 +137,8 @@ void negatyw(int obraz_pgm [][MAX], int *wymx, int *wymy, int szarosci)
 }
 
 /*Funkcja wykonujaca progowanie na wczytanym pliku dla zadanego przez uzytkownika procentu*/
-void progowanie(int obraz_pgm [][MAX], int *wymx, int *wymy, int szarosci, int procprog) /*procprog - wprowadzony w menu przez uzytkownika procent przy ktorym ma zostac wykonane progowanie*/
-{
+void progowanie(int obraz_pgm [][MAX], int *wymx, int *wymy, int szarosci, int procprog) 
+{                           /*procprog - wprowadzony w menu przez uzytkownika procent przy ktorym ma zostac wykonane progowanie*/
     int i, j, wartprog;     /*wartprog - liczbowa wartosc progu dla ktorej nastepuje "zalamanie" sie czerni z biela*/
                             /*jest to wybrany przez uzytkownika procent z maksymalnej wartosci szarosci*/
         wartprog = ((procprog*szarosci)/100);
@@ -147,7 +161,7 @@ void progowanie(int obraz_pgm [][MAX], int *wymx, int *wymy, int szarosci, int p
 }
 
 /*Funkcja wykonujaca konturowanie na wczytanym pliku*/
-void konturowanie(int obraz_pgm [][MAX], int *wymx, int *wymy)
+void konturowanie(int obraz_pgm [][MAX], int *wymx, int *wymy, int szarosci)
 {
     int i, j;
 
@@ -176,6 +190,12 @@ void konturowanie(int obraz_pgm [][MAX], int *wymx, int *wymy)
                     else                /*standardowa sytuacja*/
                     {
                         obraz_pgm [i][j] = (abs(obraz_pgm [i+1][j]-obraz_pgm [i][j]) + abs(obraz_pgm [i][j+1]-obraz_pgm [i][j]));
+
+                        if (obraz_pgm [i][j] > szarosci)    /*moze wystapic sytuacja w ktorej powyzszy wzor odda wart. wieksza niz  */
+                        {                                   /*maksymalna mozliwa, ten if stanowi zabezpieczenie przed czyms takim   */
+                            obraz_pgm [i][j] = szarosci; 
+                        }
+                        
                     }
                     /*konturowanie wedlug wzoru z pliku obrazy_filtry.pdf, abs (int) to wart. bezwzgledna z int*/
                 } 
@@ -327,10 +347,10 @@ void rozmywanie_poziom(int obraz_pgm [][MAX], int *wymx, int *wymy, int prog, in
 /*Funkcja sprawdzająca czy wczytano plik*/
 
 int main() {
-  int obraz[MAX][MAX] ;
-  int wymx,wymy,odcieni;
-
-  int odczytano = 0;
+  int obraz[MAX][MAX];
+  int tabelatemp[MAX][MAX]; /*tabela tymczasowa opisana w funkcji rozmywania*/
+  int wymx, wymy, szarosci, wart, procprog; /*wart - zmienna dla menu uzytkownika*/
+  int odczytano = 0;                        /*procprog - opisane w funkcji progowania*/
   FILE *plik;
   char nazwa[100];
 
@@ -342,7 +362,7 @@ int main() {
   plik=fopen(nazwa,"r");
 
   if (plik != NULL) {       /* co spowoduje zakomentowanie tego warunku */
-    odczytano = czytaj(plik,obraz,&wymx,&wymy,&odcieni);
+    odczytano = czytaj(plik,obraz,&wymx,&wymy,&szarosci);
     fclose(plik);
   }
 
