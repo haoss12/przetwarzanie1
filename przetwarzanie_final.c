@@ -68,27 +68,27 @@ int czytaj(FILE *plik_we,int obraz_pgm[][MAX],int *wymx,int *wymy, int *szarosci
 }                       /* Zwroc liczbe wczytanych pikseli */
 
 /*Funckja zapisujaca plik pod wybrana przez uzytkownika nazwa*/
-int zapisz(FILE *plik_wy, int obraz_pgm [][MAX], int *wymx, int *wymy, int *szarosci)
+int zapisz(FILE *plik_wy, int obraz_pgm [][MAX], int *wymx, int *wymy, int szarosci)
 {
     int i, j;
 
     if (plik_wy == NULL)
     {
-        fprintf(stderr "Blad: Nie podano uchwytu do pliku\n");
+        fprintf(stderr,"Blad: Nie podano uchwytu do pliku\n");
         return(0);
     }
     
     fprintf(plik_wy, "P2\n");
-    fprintf(plik_wy, "%d %d %d", *wymx, *wymy, *szarosci);
+    fprintf(plik_wy, "%d %d %d", *wymx, *wymy, szarosci);
     fprintf(plik_wy, "\n");
     for (i=0; i<*wymy; ++i){
         for (j=0; j<*wymx; ++j){
-            fprintf(plik_wy, "%d ", &(obraz_pgm [i][j]));
+            fprintf(plik_wy, "%d ", (obraz_pgm [i][j]));
         }
         fprintf(plik_wy, "\n");
     }
 
-    return 0;
+    return 1;
 }
 
 /* Wyswietlenie obrazu o zadanej nazwie za pomoca programu "display"   */
@@ -113,12 +113,12 @@ void wyczysc()
 }
 
 /*Funkjca usuwajaca plik tymczasowy stworzony na potrzeby wyswietlania*/
-void usun(char *n_pliku)
+void usun()
 {    
   char polecenie[DL_LINII];     /*bufor pomocniczy do zestawienia polecenia */
 
   strcpy(polecenie,"rm ");      /*konstrukcja polecenia postaci */
-  strcat(polecenie,n_pliku);    /* rm "nazwa_pliku" &       */
+  strcat(polecenie,"temp.pgm ");    /* rm "nazwa_pliku" &       */
   strcat(polecenie," &");
   system(polecenie);            /*wykonanie polecenia           */
 
@@ -213,9 +213,9 @@ void rozmywanie_pion(int obraz_pgm [][MAX], int *wymx, int *wymy, int prog, int 
 
     if (prog == 1) //pierwszy prog rozmywania
     {
-        for (i=0; i<wymy; ++i)
+        for (i=0; i<*wymy; ++i)
         {
-            for (j=0; j<wymx; ++j)
+            for (j=0; j<*wymx; ++j)
             {
                 if (i==KRAWEDZ)     //wyjatek dla gornej krawedzi obrazu, by funkcja nie pobierala czegos co nie istnieje
                 {
@@ -235,9 +235,9 @@ void rozmywanie_pion(int obraz_pgm [][MAX], int *wymx, int *wymy, int prog, int 
 
     if (prog == 2)  //drugi prog rozmywania
     {
-        for (i=0; i<wymy; ++i)
+        for (i=0; i<*wymy; ++i)
         {
-            for (j=0; j<wymx; ++j)
+            for (j=0; j<*wymx; ++j)
             {   
                 if (i==KRAWEDZ)     //wyjatek dla gornej krawedzi obrazu, jw.
                 {
@@ -284,9 +284,9 @@ void rozmywanie_poziom(int obraz_pgm [][MAX], int *wymx, int *wymy, int prog, in
 
         if (prog == 1) //pierwszy prog rozmywania
     {
-        for (i=0; i<wymy; ++i)
+        for (i=0; i<*wymy; ++i)
         {
-            for (j=0; j<wymx; ++j)
+            for (j=0; j<*wymx; ++j)
             {
                 if (j==KRAWEDZ)     //wyjatek dla gornej krawedzi obrazu, by funkcja nie pobierala czegos co nie istnieje
                 {
@@ -306,9 +306,9 @@ void rozmywanie_poziom(int obraz_pgm [][MAX], int *wymx, int *wymy, int prog, in
 
     if (prog == 2)  //drugi prog rozmywania
     {
-        for (i=0; i<wymy; ++i)
+        for (i=0; i<*wymy; ++i)
         {
-            for (j=0; j<wymx; ++j)
+            for (j=0; j<*wymx; ++j)
             {   
                 if (j==KRAWEDZ)     //wyjatek dla gornej krawedzi obrazu, jw.
                 {
@@ -349,26 +349,173 @@ void rozmywanie_poziom(int obraz_pgm [][MAX], int *wymx, int *wymy, int prog, in
 int main() {
   int obraz[MAX][MAX];
   int tabelatemp[MAX][MAX]; /*tabela tymczasowa opisana w funkcji rozmywania*/
-  int wymx, wymy, szarosci, wart, procprog; /*wart - zmienna dla menu uzytkownika*/
+  int wymx, wymy, szarosci, wart, procprog, promien; /*wart - zmienna dla menu uzytkownika*/
   int odczytano = 0;                        /*procprog - opisane w funkcji progowania*/
   FILE *plik;
   char nazwa[100];
 
-  /*Aby program mogl pozwolic uzytkownikowi dalsza prace nalezy wczytac plik*/
-  printf("Musisz wczytac plik aby rozpoczac prace programu\n");
-  /* Wczytanie zawartosci wskazanego pliku do pamieci */
-  printf("Podaj nazwe pliku:\n");
-  scanf("%s",nazwa);
-  plik=fopen(nazwa,"r");
 
-  if (plik != NULL) {       /* co spowoduje zakomentowanie tego warunku */
-    odczytano = czytaj(plik,obraz,&wymx,&wymy,&szarosci);
-    fclose(plik);
-  }
+  do
+{
+    printf ("Menu: \n 1 - Wczytaj \n 2 - Zapisz \n 3 - Wyswietl \n 4 - Negatyw \n 5 - Progowanie \n"); 
+    printf ("6 - Konturowanie \n 7 - Rozmycie pionowe \n 8 - Rozmycie poziome \n 0 - Wyjscie \n Twój wybor: ");
+    scanf ("%d", &wart);
+    
+    switch (wart)
+    {
+    case 1:             /*wczytywanie pliku*/
+        printf("Wybrałeś opcję %d. \n", wart);
+        printf("Podaj nazwe pliku:\n");
+        scanf("%s",nazwa); /*Uzytkownik podaje nazwe pliku ktory chce wczytac*/
+        plik=fopen(nazwa,"r"); /*plik odczytywany w trybie read only*/
+        
+        if (plik != NULL) /*sprawdzenie czy plik istnieje*/
+        {
+            odczytano = czytaj(plik,obraz,&wymx,&wymy,&szarosci); /*wywolanie f. czytaj i przypisanie "odczytano" jej zwrotu*/
+            fclose(plik);   /*zamkniecie pliku*/
+            wyczysc();      /*wywolanie f. czyszczenia terminala*/
+            printf("Plik odczytano poprawnie\n\n"); /*zwrot do terminala*/
+        }
+        else    /*sytuacja w ktorej podany plik nieistnieje*/
+        {
+            wyczysc();
+            printf("Blad: Nie udalo sie wczytac podanego pliku\n\n");
+        }
+        
+        break;
+    case 2:
+        printf("Wybrałeś opcję %d. \n", wart);
+        if (odczytano != 0) /*sprawdzenie czy wczytano plik*/
+        {
+            printf("Podaj nazwe pod jaka ma zostac zapisany plik, pamietajac o koncowce (.pgm): ");
+            scanf("%s",nazwa); /*pobranie nazwy pliku podanej przez uzytkownika*/
+            plik=fopen(nazwa,"w"); /*plik otwarty w trybie write premitted*/
+            zapisz(plik,obraz,&wymx,&wymy,szarosci); /*wywolanie funkcji zapisz*/
+            fclose(plik);
+            wyczysc();  /*wywolanie f. czyszczenia terminala*/
+            printf("Poprawnie zapisano plik\n\n");
+        }
+        else
+        {
+            wyczysc();
+            printf("Blad: Brak pliku do zapisania\n\n");
+         }
+        break;
+    case 3:
+        printf("Wybrałeś opcję %d. \n", wart);
+        if (odczytano != 0){ /*sprawdzenie czy wczytano plik*/
+        plik=fopen("temp.pgm","w"); /*otwarcie pliku tymczasowego do wyswietlenia*/
+        zapisz(plik,obraz,&wymx,&wymy,szarosci); /*zapis pliku*/
+        fclose(plik); /*zamykam go*/
+        wyswietl("temp.pgm"); /*wywolanie f. wyswietlania*/
+        usun();         /*wywolanie f. usuwajacej plik tymczasowy*/
+        wyczysc();  /*wywolanie f. czyszczenia terminala*/
+        printf("Obraz wyswietlono poprawnie\n\n");
+      }
+      else{ /*sytuacja, gdy plik nie jest wczytany*/
+        wyczysc();  /*wywolanie f. czyszczenia terminala*/
+        printf("Blad: Brak pliku do wyswietlenia\n\n");
+      }
+        break;
+    case 4:
+        printf("Wybrałeś opcję %d. \n", wart);
+        if (odczytano != 0){ /*sprawdzenie czy wczytano plik*/
+        negatyw(obraz,&wymx,&wymy,szarosci); /*wywolanie f. negatywu*/
+        wyczysc();        /*wywolanie f. czyszczenia terminala*/
+        printf("Negatyw wykonano poprawnie\n\n");
+      }
+      else{ /*sytuacja, gdy plik nie jest wczytany*/
+        wyczysc();
+        printf("Blad: Brak pliku do wykonania negatywu\n\n");
+        }
+        break;
+    case 5:
+        printf("Wybrałeś opcję %d. \n", wart);
+        if (odczytano != 0){ /*sprawdzenie czy wczytano plik*/
+        printf("Podaj procent progowania: ");
+        scanf("%d", &procprog); /*uzytkownik podaje procent progowania*/
+        if (procprog>=0 || procprog<=100)
+        {
+            progowanie(obraz,&wymx,&wymy,szarosci,procprog); /*wywolanie f. progowania*/
+            wyczysc();        /*wywolanie f. czyszczenia terminala*/
+            printf("Progowanie wykonano poprawnie\n\n");
+        }
+        else
+        {
+            wyczysc();        /*wywolanie f. czyszczenia terminala*/
+            printf("Blad: Procent progowania wykracza poza mozliwy zakres\n\n");
+        }
+      }
+      else{ /*sytuacja, gdy plik nie jest wczytany*/
+        wyczysc();
+        printf("Blad: Brak pliku do wykonania progowania\n\n");
+        }
+        break;
+    case 6:
+        printf("Wybrałeś opcję %d. \n", wart);
+        if (odczytano != 0){    /*sprawdzenie czy wczytano plik*/
+        konturowanie(obraz,&wymx,&wymy,szarosci); /*wywolanie f. konturowania*/
+        wyczysc();        /*wywolanie f. czyszczenia terminala*/
+        printf("Konturowaie wykonano poprawnie\n\n");
+      }
+      else{ /*sytuacja, gdy plik nie jest wczytany*/
+        wyczysc();
+        printf("Blad: Brak pliku do wykonania konturowania\n\n");
+        }
+        break;
+    case 7:
+        printf("Wybrałeś opcję %d. \n", wart);
+        if (odczytano != 0){    /*sprawdzenie czy wczytano plik*/
+        printf("Podaj promien rozmycia (1 lub 2): ");
+        scanf("%d", &promien); /*uzytkownik podaje promien rozmycia*/
+        if (promien == 1 || promien == 2)
+        {
+            rozmywanie_pion(obraz, &wymx, &wymy, promien, tabelatemp);
+            wyczysc();        /*wywolanie f. czyszczenia terminala*/
+            printf("Rozmycie wykonano poprawnie\n\n");
+        }
+        else
+        {
+            wyczysc();        /*wywolanie f. czyszczenia terminala*/
+            printf("Blad: Podano niepoprawy promien rozmycia \n\n");
+        }
+      }
+      else{ /*sytuacja, gdy plik nie jest wczytany*/
+        wyczysc();
+        printf("Blad: Brak pliku do wykonania rozmycia\n\n");
+        }
+        break;
+    case 8:
+        printf("Wybrałeś opcję %d. \n", wart);
+        if (odczytano != 0){    /*sprawdzenie czy wczytano plik*/
+        printf("Podaj promien rozmycia (1 lub 2): ");
+        scanf("%d", &promien); /*uzytkownik podaje promien rozmycia*/
+        if (promien == 1 || promien == 2)
+        {
+            rozmywanie_poziom(obraz, &wymx, &wymy, promien, tabelatemp);
+            wyczysc();        /*wywolanie f. czyszczenia terminala*/
+            printf("Rozmycie wykonano poprawnie\n\n");
+        }
+        else
+        {
+            wyczysc();        /*wywolanie f. czyszczenia terminala*/
+            printf("Blad: Podano niepoprawy promien rozmycia \n\n");
+        }
+      }
+      else{ /*sytuacja, gdy plik nie jest wczytany*/
+        wyczysc();
+        printf("Blad: Brak pliku do wykonania rozmycia\n\n");
+        }
+        break;    
+    case 0:
+        puts ("Koniec działania programu");
+        return 0;
+        break;
 
-  /* Wyswietlenie poprawnie wczytanego obraza zewnetrznym programem */
-  if (odczytano != 0)
-    wyswietl(nazwa);
+    default:
+        puts ("Błędna wartość!");
+        break;
+    }
 
-  return odczytano;
+} while (wart != 0);
 }
